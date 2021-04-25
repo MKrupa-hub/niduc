@@ -40,4 +40,4 @@ def decode_crc(package: list)-> list:
         return crc
     else:
         return error
-        #return ["Repeat"] #do zliczania liczby powtórek przesłania pakietow pozniej
+        #return ["Repeat"] #do zliczania liczby powtórek przesłania pakietow pozniej 
