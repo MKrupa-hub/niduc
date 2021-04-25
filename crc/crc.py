@@ -1,9 +1,10 @@
 # Funkcja przyjmuje dane, następnie uzupełnia je zerami do odpowiedniej długości
-# Następnie skanuje otrzymane dane i jeśli znajdzie 1, wykonuje operację xor na bitach między danymi, a wielomianem.
+# Następnie skanuje otrzymane dane i jeśli znajdzie 1, wykonuje operację xor(bool ^ bool) na bitach między danymi, a wielomianem.
 # wielomian x^3+x+1
 key = ['1', '0', '1', '1']
 size = len(key)
 error = "Bledny przesyl"
+fixed ="Naprawiono"
 
 def code_crc(package: list)-> list:
     crc = list.copy(package)
@@ -20,8 +21,7 @@ def code_crc(package: list)-> list:
         crc.append(tmp[bits + i])
     return crc
 
-
-def decode_crc(package: list)-> list:
+def decode_crc(good1, fixedPacket1, fixedNotGood1, package: list)-> list:
     tmp = list.copy(package)
     bits = len(package)
     for i in range(bits - size + 1):
@@ -33,11 +33,13 @@ def decode_crc(package: list)-> list:
         sum0 = sum0 + int(tmp[bits - 1 - i])
 
     if sum0 == 0:
-        return package[:-(size - 1)] #wyświetla bez dodanych zer #Poprawny pakiet bez zmian
+        good1 += 1
+        return package[:-(size - 1)] #Poprawny pakiet bez zmian
     elif sum0 == 1:
         crc = package[:-(size - 1)]
-        #crc.append("Fixed") #do zliczania liczby naprawionych pakietow pozniej
-        return crc
+        fixedPacket1 += 1
+         #do zliczania liczby naprawionych pakietow pozniej
+        return fixed
     else:
-        return error
-        #return ["Repeat"] #do zliczania liczby powtórek przesłania pakietow pozniej
+        fixedNotGood1 += 1
+        return error #do zliczania liczby powtórek przesłania pakietow pozniej
