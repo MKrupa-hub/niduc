@@ -1,4 +1,6 @@
-
+key = ['1', '0', '1', '1'] # dzielnik XOR
+size = len(key)
+error = "Bledny przesyl"
 
 class Decoder:
     def __init__(self):
