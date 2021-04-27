@@ -1,6 +1,8 @@
+import functools
+import operator
+
 key = ['1', '0', '1', '1'] # dzielnik XOR
 size = len(key)
-error = "Bledny przesyl"
 
 class Decoder:
     def __init__(self):
@@ -39,3 +41,21 @@ class Decoder:
                 decoded.append('1')
                 fixed = True
         return decoded, fixed
+
+    def decode_hamming(self, bits):
+        parity = [1, 2, 4, 8]
+        toFix = functools.reduce(operator.xor, [i for i, bit in enumerate(bits) if bit])
+        if toFix == 0:
+            bits.pop(0)
+            bits.pop(0)
+            bits.pop(0)
+            bits.pop(1)
+            bits.pop(4)
+            return bits, False
+        bits[toFix] = int(not bits[toFix])
+        bits.pop(0)
+        bits.pop(0)
+        bits.pop(0)
+        bits.pop(1)
+        bits.pop(4)
+        return bits, True

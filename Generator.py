@@ -1,4 +1,6 @@
 import random
+import functools
+import operator
 
 key = ['1', '0', '1', '1'] # dzielnik XOR
 size = len(key)
@@ -45,61 +47,28 @@ class Generator:
         return crc
 
     # dziala dla 11 bitow w pakiecie
-    # kodowanie jest proste. Dodajemy bity parzystosci na pozycjach potegi 2
     def code_hamming(self, package):
-        list = [0,0,0,0]
-        package.insert(0, '0')
-        for i in range(16):
-            if 2**i > 15:
-                break
-            package.insert(2**i, '0')
-        # ustawianie bitow parzystosci
-        # ustawienie pierwszego bitu
-        for j in range(3, 16, 2):
-             if package[j] == '1':
-                 list[0] += 1
-        if list[0] % 2 == 0:
-            package[1] = '0'
-        else:
-            package[1] = '1'
-         # drugi bit, pozycje 3, 6,7, 10,11, 14,15
-        for j in range(3, 16, 3):
-            if package[j] == '1':
-                list[1] += 1
-            if j % 2 == 0:
-                j += 1
-                if package[j] == '1':
-                    list[1] += 1
-        if list[1] % 2 == 0:
-            package[2] = '0'
-        else:
-            package[2] = '1'
-        # trzeci bit, pozycje 5-7, 12-15
-        for j in range(5, 15, 5):
-            for x in range(2):
-                if package[j+x] == '1':
-                    list[2] += 1
-        if list[2] % 2 == 0:
-            package[4] = '0'
-        else:
-            package[4] = '1'
-        # czwarty bit, pozycje 9 -15
-        for j in range(8, 16, 1):
-             if package[j] == '1':
-                 list[3] += 1
-
-        if list[3] % 2 == 0:
-            package[8] = '0'
-        else:
-            package[8] = '1'
-
+        parity = [1,2,4,8]
+        bits = []
+        for i in range(len(package)):
+            if package[i] == '1':
+                bits.append(1)
+            elif package[i] == '0':
+                bits.append(0)
+        bits.insert(0, 0)
+        bits.insert(1, 0)
+        bits.insert(2, 0)
+        bits.insert(4, 0)
+        bits.insert(8, 0)
+        toSet = functools.reduce(operator.xor, [i for i, bit in enumerate(bits) if bit])
+        for i in range(5):
+            if toSet & (1 << i):
+                bits[parity[i]] = int(not bits[parity[i]])
+        # teraz ustawiam bit 0
         count = 0
-        for j in range(1, 16):
-            if package[j] == '1':
+        for i in range(1, len(bits)):
+            if bits[i] == 1:
                 count += 1
-        if count % 2 == 0:
-            package[0] = '0'
-        else:
-            package[0] = '1'
-
-        return package
+        if count % 2 != 0:
+            bits[0] = 1
+        return bits
