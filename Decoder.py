@@ -1,9 +1,50 @@
 import functools
 import operator
 
-key = ['1', '0', '1', '1'] # dzielnik XOR
-size = len(key)
+key = [1, 0, 1, 1] # dzielnik XOR
+keyLen = len(key)
 
+def decodeCrc(coded, fixed):
+    temp = coded.copy()
+    # operacja XOR. To samo co przy kodowaniu
+    for i in range(len(coded) - keyLen):
+        if temp[i] == 1:
+            for j in range(len(key)):
+                temp[i + j] = operator.xor(temp[i+j], key[j])
+    crc = temp[len(coded) - keyLen + 1 : ]
+    # Przypadek gdy bity CRC sa 0
+    how = crc.count(0)
+    if how == keyLen - 1:
+        return coded[0: len(coded) - keyLen + 1], fixed
+    # Przypadek gdy jest przeklamanie w CRC
+    if how == keyLen - 2:
+        if not fixed:
+            for i in range(len(crc)):
+                coded[len(coded) - len(crc) + i] = operator.xor(coded[len(coded) - len(crc) + i], crc[i])
+            return decodeCrc(coded, True)
+    temp = coded.copy()
+    return helper(temp, 0), True
+
+def helper(packet, count):
+    if count == len(packet):
+        return None
+    packet.insert(0, packet[-1])
+    packet.pop(len(packet) - 1)
+    temp = packet.copy()
+    for i in range(len(packet) - keyLen):
+        if temp[i] == 1:
+            for j in range(len(key)):
+                temp[i + j] = operator.xor(temp[i+j], key[j])
+    crc = temp[len(packet) - keyLen + 1:]
+    if crc.count(1) == 1:
+        for i in range(len(crc)):
+            packet[len(packet) - len(crc) + i] = operator.xor(packet[len(packet) - len(crc) + i], crc[i])
+        for x in range(count + 1):
+            a = packet[0]
+            packet.pop(0)
+            packet.append(a)
+        return packet[0: len(packet) - keyLen + 1]
+    return helper(packet, count + 1)
 
 # dekodowanie (dla powtarzania bitu 3 razy):
 # zakładam, że najbardziej prawdopodobne jest wystąpienie pojedyńczego błędu:
@@ -41,19 +82,12 @@ def decodeMulti(coded, multi):
 # HARDCODE
 # Dziala dla 11 bitow
 def decode_hamming(bits):
-    parity = [1, 2, 4, 8]
     toFix = functools.reduce(operator.xor, [i for i, bit in enumerate(bits) if bit])
-    if toFix == 0:
-        bits.pop(0)
-        bits.pop(0)
-        bits.pop(0)
-        bits.pop(1)
-        bits.pop(4)
-        return bits, False
-    bits[toFix] = int(not bits[toFix])
+    if toFix:
+        bits[toFix] = int(not bits[toFix])
     bits.pop(0)
     bits.pop(0)
     bits.pop(0)
     bits.pop(1)
     bits.pop(4)
-    return bits, True
+    return bits, bool(toFix)

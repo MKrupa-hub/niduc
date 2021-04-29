@@ -2,14 +2,7 @@ import random
 import functools
 import operator
 
-key = ['1', '0', '1', '1'] # dzielnik XOR
-size = len(key)
-
-def XOR(a, b):
-    if a == b:
-        return '0'
-    if a != b:
-        return '1'
+key = [1, 0, 1, 1] # dzielnik XOR
 
 def packing(length):
      package = []
@@ -26,20 +19,20 @@ def multiple_bit(multiple, package):
             [temp.append(1) for i in range(multiple)]
     return temp
 
-def code_crc(package):
-    crc = package.copy() # kopia pakietu
-    tmp = package.copy() # do ciagu danych dodaje 3 wyzerowane bity
-    for i in range(size - 1):
-        tmp.append('0')
-    bits = len(crc) # dlugosc orginalnego ciagu
+def code_crc(packet):
+    temp = packet.copy() # do ciagu danych dodaje 3 wyzerowane bity
+    for i in range(len(key) - 1):
+        temp.append(0)
     # jezeli nad najstarsza pozycja dzielnika jest 0 to przesuwam dzielnik w prawo aż do napotkania 1
-    for i in range(bits):
-        if tmp[i] == '1':
+    for i in range(len(packet)):
+        if temp[i] == 1:
             for j in range(len(key)):
-                tmp[i + j] = XOR(tmp[i+j], key[j]) # XOR pomiedzy dzielnikiem a danymi
-    for i in range(len(crc), len(crc)+len(key) - 1):
-        crc.append(tmp[i])
-    return crc
+                temp[i + j] = operator.xor(temp[i+j], key[j])
+    # dodaje bity CRC do pakietu
+    size = len(packet)
+    for i in range(size, len(packet) + len(key) - 1):
+        packet.append(temp[i])
+    return packet
 
 # HARDCODE
 # Dziala dla 11 bitowego pakietu
