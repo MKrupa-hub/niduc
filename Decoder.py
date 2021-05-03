@@ -4,46 +4,46 @@ import operator
 key = [1, 0, 0, 1, 0, 1] # dzielnik XOR
 keyLen = len(key)
 
-def decodeCrc(coded, fixed):
-    temp = coded.copy()
-    for i in range(len(coded) - keyLen + 1):
-        if temp[i] == 1:
-            for j in range(len(key)):
-                temp[i + j] = operator.xor(temp[i+j], key[j])
-    crc = temp[len(coded) - keyLen + 1 : ]
-    # Przypadek gdy bity CRC sa 0
-    how = crc.count(0)
-    if how == keyLen - 1:
-       return coded[0: len(coded) - keyLen + 1], fixed
-    # Przypadek gdy jest przeklamanie w CRC
-    if how == keyLen - 2:
-        if not fixed:
-            for i in range(len(crc)):
-                coded[len(coded) - len(crc) + i] = operator.xor(coded[len(coded) - len(crc) + i], crc[i])
-            return decodeCrc(coded, True)
-    temp = coded.copy()
-    return helper(temp, 0), True
-
-def helper(packet, count):
-    if count == len(packet):
-        return None
-    packet.insert(0, packet[-1])
-    packet.pop(len(packet) - 1)
+def getCrc(packet):
     temp = packet.copy()
     for i in range(len(packet) - keyLen + 1):
         if temp[i] == 1:
             for j in range(len(key)):
                 temp[i + j] = operator.xor(temp[i+j], key[j])
-    crc = temp[len(packet) - keyLen + 1:]
-    if crc.count(1) == 1:
+    return temp[len(packet) - keyLen + 1 : ]
+
+def decodeCrc(coded):
+    crc = getCrc(coded)
+    how = crc.count(1)
+    # Przypadek gdy bity CRC sa 0
+    if how == 0:
+       return coded[0: len(coded) - keyLen + 1], False
+    # Przypadek gdy jest przeklamanie (1 jedynka) w CRC
+    if how == 1:
+        temp = coded.copy()
         for i in range(len(crc)):
-            packet[len(packet) - len(crc) + i] = operator.xor(packet[len(packet) - len(crc) + i], crc[i])
-        for x in range(count + 1):
-            a = packet[0]
-            packet.pop(0)
-            packet.append(a)
-        return packet[0: len(packet) - keyLen + 1]
-    return helper(packet, count + 1)
+            # dodaje policzone crc do oryginalnego
+            temp[len(temp) - len(crc) + i] = operator.xor(temp[len(temp) - len(crc) + i], crc[i])
+        return temp, True
+    temp = coded.copy()
+    if how == 2:
+        # Teraz przypadek gdy sa 2 jedynki
+        # przesuwamy pakiet do momentu az po dzieleniu w CRC bedzie tylko 1 jedynka
+        for i in range(len(temp)):
+            temp.insert(0, temp[-1])
+            temp.pop(len(temp) - 1)
+            crcToAdd = getCrc(temp)
+            if crcToAdd.count(1) == 1:
+                for j in range(len(crc)):
+                    # dodaje policzone crc do oryginalnego
+                    temp[len(temp) - len(crcToAdd) + j] = operator.xor(temp[len(temp) - len(crcToAdd) + j], crcToAdd[j])
+                # odwracam przesuniecie
+                for x in range(i+1):
+                    a = temp[0]
+                    temp.pop(0)
+                    temp.append(a)
+                return temp[ : len(temp) - keyLen + 1], True
+    return temp[0: len(temp) - keyLen + 1], True
 
 # dekodowanie (dla powtarzania bitu 3 razy):
 # zakładam, że najbardziej prawdopodobne jest wystąpienie pojedyńczego błędu:
