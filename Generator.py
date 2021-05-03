@@ -2,7 +2,7 @@ import random
 import functools
 import operator
 
-key = [1, 0, 1, 1] # dzielnik XOR
+key = [1, 0, 0, 1, 0, 1] # dzielnik XOR
 
 def packing(length):
      package = []
@@ -20,6 +20,7 @@ def multiple_bit(multiple, package):
     return temp
 
 def code_crc(packet):
+    tmp = packet.copy()
     temp = packet.copy() # do ciagu danych dodaje 3 wyzerowane bity
     for i in range(len(key) - 1):
         temp.append(0)
@@ -30,9 +31,9 @@ def code_crc(packet):
                 temp[i + j] = operator.xor(temp[i+j], key[j])
     # dodaje bity CRC do pakietu
     size = len(packet)
-    for i in range(size, len(packet) + len(key) - 1):
-        packet.append(temp[i])
-    return packet
+    for i in range(size, size + len(key) - 1):
+        tmp.append(temp[i])
+    return tmp
 
 # HARDCODE
 # Dziala dla 11 bitowego pakietu
@@ -44,7 +45,7 @@ def code_hamming(package):
     bits.insert(2, 0)
     bits.insert(4, 0)
     bits.insert(8, 0)
-    toSet = functools.reduce(operator.xor, [i for i, bit in enumerate(bits) if bit])
+    toSet = functools.reduce(operator.xor, [i for i, bit in enumerate(bits) if bit], 0)
     for i in range(5):
         if toSet & (1 << i):
             bits[parity[i]] = int(not bits[parity[i]])

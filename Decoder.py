@@ -1,13 +1,12 @@
 import functools
 import operator
 
-key = [1, 0, 1, 1] # dzielnik XOR
+key = [1, 0, 0, 1, 0, 1] # dzielnik XOR
 keyLen = len(key)
 
 def decodeCrc(coded, fixed):
     temp = coded.copy()
-    # operacja XOR. To samo co przy kodowaniu
-    for i in range(len(coded) - keyLen):
+    for i in range(len(coded) - keyLen + 1):
         if temp[i] == 1:
             for j in range(len(key)):
                 temp[i + j] = operator.xor(temp[i+j], key[j])
@@ -15,7 +14,7 @@ def decodeCrc(coded, fixed):
     # Przypadek gdy bity CRC sa 0
     how = crc.count(0)
     if how == keyLen - 1:
-        return coded[0: len(coded) - keyLen + 1], fixed
+       return coded[0: len(coded) - keyLen + 1], fixed
     # Przypadek gdy jest przeklamanie w CRC
     if how == keyLen - 2:
         if not fixed:
@@ -31,7 +30,7 @@ def helper(packet, count):
     packet.insert(0, packet[-1])
     packet.pop(len(packet) - 1)
     temp = packet.copy()
-    for i in range(len(packet) - keyLen):
+    for i in range(len(packet) - keyLen + 1):
         if temp[i] == 1:
             for j in range(len(key)):
                 temp[i + j] = operator.xor(temp[i+j], key[j])
@@ -65,16 +64,10 @@ def decodeMulti(coded, multi):
             decoded.append(1)
             continue
         # proba naprawy pakietu
-        test = 0
-        for x in range(len(temp)):
-            if temp[x] == 0:
-                test += 1
-            else:
-                test -= 1
-        if test == 1:
+        if temp.count(0) > multi /2:
             decoded.append(0)
             fixed = True
-        elif test == -1:
+        elif temp.count(1) > multi /2:
             decoded.append(1)
             fixed = True
     return decoded, fixed
@@ -82,7 +75,7 @@ def decodeMulti(coded, multi):
 # HARDCODE
 # Dziala dla 11 bitow
 def decode_hamming(bits):
-    toFix = functools.reduce(operator.xor, [i for i, bit in enumerate(bits) if bit])
+    toFix = functools.reduce(operator.xor, [i for i, bit in enumerate(bits) if bit], 0)
     if toFix:
         bits[toFix] = int(not bits[toFix])
     bits.pop(0)
