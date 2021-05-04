@@ -40,7 +40,7 @@ def decodeCrc(coded):
                     toCheck[len(toCheck) - len(crcToAdd) + j] = operator.xor(toCheck[len(toCheck) - len(crcToAdd) + j], crcToAdd[j])
                 # odwracam przesuniecie
                 for x in range(i+1):
-                    a = temp[0]
+                    a = toCheck[0]
                     toCheck.pop(0)
                     toCheck.append(a)
                 # moze jest szansa, ze istnieja dwa takie kody CRC co maja tylko 1 jedynke
