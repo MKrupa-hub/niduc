@@ -26,7 +26,7 @@ def decodeCrc(coded):
             temp[len(temp) - len(crc) + i] = operator.xor(temp[len(temp) - len(crc) + i], crc[i])
         return temp, True
     temp = coded.copy()
-    if how == 2:
+    if how >= 2:
         # Teraz przypadek gdy sa 2 jedynki
         # przesuwamy pakiet do momentu az po dzieleniu w CRC bedzie tylko 1 jedynka
         for i in range(len(temp)):
@@ -34,15 +34,21 @@ def decodeCrc(coded):
             temp.pop(len(temp) - 1)
             crcToAdd = getCrc(temp)
             if crcToAdd.count(1) == 1:
+                toCheck = temp.copy()
                 for j in range(len(crc)):
                     # dodaje policzone crc do oryginalnego
-                    temp[len(temp) - len(crcToAdd) + j] = operator.xor(temp[len(temp) - len(crcToAdd) + j], crcToAdd[j])
+                    toCheck[len(toCheck) - len(crcToAdd) + j] = operator.xor(toCheck[len(toCheck) - len(crcToAdd) + j], crcToAdd[j])
                 # odwracam przesuniecie
                 for x in range(i+1):
                     a = temp[0]
-                    temp.pop(0)
-                    temp.append(a)
-                return temp[ : len(temp) - keyLen + 1], True
+                    toCheck.pop(0)
+                    toCheck.append(a)
+                # moze jest szansa, ze istnieja dwa takie kody CRC co maja tylko 1 jedynke
+                # jednakze tylko jeden jest prawdziwy
+                # SPRAWDZMY!
+                checkCrc = getCrc(toCheck)
+                if checkCrc.count(1) == 0:
+                    return toCheck[ : len(toCheck) - keyLen + 1], True
     return temp[0: len(temp) - keyLen + 1], True
 
 # dekodowanie (dla powtarzania bitu 3 razy):

@@ -13,9 +13,9 @@ fixedPacket = 0
 fixedNotGood = 0
 undetected = 0
 
-pac = [1,1,0,1,0,1,0,0,0,1]
+pac = [1,1,0,1, 1,1,0,1, 1,1,0,1]
 coded = gene.code_crc(pac)
-coded[4] = int(not coded[4])
+coded[8] = int(not coded[8])
 decodero, fix = deco.decodeCrc(coded)
 
 print("CRC OR : ", pac)
@@ -27,15 +27,15 @@ print("CRC DE : ", decodero, fix)
 # jest prawdopodobienstwo ze zamienimy bit w pakiecie na przeciwny
 for j in range(test):
     packet = gene.packing(length)
-    codedCrc = gene.code_crc(packet)
-    codedHam = gene.code_hamming(packet)
-    codedMult = gene.multiple_bit(multi, packet)
+    #coded = gene.code_crc(packet)
+    coded = gene.code_hamming(packet)
+    #coded = gene.multiple_bit(multi, packet)
     for i in range(len(coded)):
         if random.random() < probability:
             coded[i] = int(not coded[i])
-    #decoded, fixed = deco.decode_hamming(coded)
+    decoded, fixed = deco.decode_hamming(coded)
     #decoded, fixed = deco.decodeMulti(coded, multi)
-    decoded, fixed = deco.decodeCrc(coded)
+    #decoded, fixed = deco.decodeCrc(codedCrc)
     # Musimy teraz ocenic ile pakietow zostalo przeslanych bez bledow, ile mialo bledy i czy udalo sie je naprawic. ORAZ ile niewykrytych bledow wystapilo
     if fixed:
         # Wystapila naprawa przy dekoderze. Sprawdzam czy naprawil poprawnie. Robie to przez porownanie listy przed i po wysyle
