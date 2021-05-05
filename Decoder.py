@@ -24,31 +24,32 @@ def decodeCrc(coded):
         for i in range(len(crc)):
             # dodaje policzone crc do oryginalnego
             temp[len(temp) - len(crc) + i] = operator.xor(temp[len(temp) - len(crc) + i], crc[i])
-        return temp, True
+        isGood = getCrc(temp)
+        if isGood.count(1) == 0:
+            return temp[: len(temp) - keyLen + 1], True
     temp = coded.copy()
-    if how >= 2:
-        # Teraz przypadek gdy sa 2 jedynki
-        # przesuwamy pakiet do momentu az po dzieleniu w CRC bedzie tylko 1 jedynka
-        for i in range(len(temp)):
-            temp.insert(0, temp[-1])
-            temp.pop(len(temp) - 1)
-            crcToAdd = getCrc(temp)
-            if crcToAdd.count(1) == 1:
-                toCheck = temp.copy()
-                for j in range(len(crc)):
-                    # dodaje policzone crc do oryginalnego
-                    toCheck[len(toCheck) - len(crcToAdd) + j] = operator.xor(toCheck[len(toCheck) - len(crcToAdd) + j], crcToAdd[j])
-                # odwracam przesuniecie
-                for x in range(i+1):
-                    a = toCheck[0]
-                    toCheck.pop(0)
-                    toCheck.append(a)
-                # moze jest szansa, ze istnieja dwa takie kody CRC co maja tylko 1 jedynke
-                # jednakze tylko jeden jest prawdziwy
-                # SPRAWDZMY!
-                checkCrc = getCrc(toCheck)
-                if checkCrc.count(1) == 0:
-                    return toCheck[ : len(toCheck) - keyLen + 1], True
+    # Teraz przypadek gdy sa > 2 jedynki
+    # przesuwamy pakiet do momentu az po dzieleniu w CRC bedzie tylko 1 jedynka
+    for i in range(len(temp)):
+        temp.insert(0, temp[-1])
+        temp.pop(len(temp) - 1)
+        crcToAdd = getCrc(temp)
+        if crcToAdd.count(1) == 1:
+            toCheck = temp.copy()
+            for j in range(len(crc)):
+                # dodaje policzone crc do oryginalnego
+                toCheck[len(toCheck) - len(crcToAdd) + j] = operator.xor(toCheck[len(toCheck) - len(crcToAdd) + j], crcToAdd[j])
+            # odwracam przesuniecie
+            for x in range(i+1):
+                a = toCheck[0]
+                toCheck.pop(0)
+                toCheck.append(a)
+            # moze jest szansa, ze istnieja dwa takie kody CRC co maja tylko 1 jedynke
+            # jednakze tylko jeden jest prawdziwy
+            # SPRAWDZMY!
+            checkCrc = getCrc(toCheck)
+            if checkCrc.count(1) == 0:
+                return toCheck[ : len(toCheck) - keyLen + 1], True
     return temp[0: len(temp) - keyLen + 1], True
 
 # dekodowanie (dla powtarzania bitu 3 razy):
@@ -80,7 +81,8 @@ def decodeMulti(coded, multi):
 
 # HARDCODE
 # Dziala dla 11 bitow
-def decode_hamming(bits):
+def decode_hamming(packet):
+    bits = packet.copy()
     toFix = functools.reduce(operator.xor, [i for i, bit in enumerate(bits) if bit], 0)
     if toFix:
         bits[toFix] = int(not bits[toFix])

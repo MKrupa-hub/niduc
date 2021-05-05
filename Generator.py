@@ -21,7 +21,7 @@ def multiple_bit(multiple, package):
 
 def code_crc(packet):
     tmp = packet.copy()
-    temp = packet.copy() # do ciagu danych dodaje 3 wyzerowane bity
+    temp = packet.copy() # do ciagu danych dodaje wyzerowane bity
     for i in range(len(key) - 1):
         temp.append(0)
     # jezeli nad najstarsza pozycja dzielnika jest 0 to przesuwam dzielnik w prawo aż do napotkania 1
