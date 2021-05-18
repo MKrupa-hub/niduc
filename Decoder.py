@@ -70,6 +70,10 @@ def decodeMulti(coded, multi):
         elif temp.count(1) == multi:
             decoded.append(1)
             continue
+        if temp.count(0) == multi /2:
+            return None, True
+        elif temp.count(1) == multi /2:
+            return None, True
         # proba naprawy pakietu
         if temp.count(0) > multi /2:
             decoded.append(0)
