@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from openpyxl import Workbook
 from openpyxl import load_workbook
+from openpyxl.drawing.image import Image
 
 message = ['Min value', '25th percentile', '50th percentile', '75th percentile', 'Max value']
 
@@ -38,6 +39,26 @@ def handle(sheetNames, columnname, sample, result, dest_fileName):
     [goodHis.append(result[x][0]) for x in range(sample)]
 
     plt.hist(goodHis, bins=10)
+    plt.xlabel('Liczba pakietów')
+    plt.ylabel('Liczba wystąpień')
+    plt.savefig('his.jpg')
     plt.show()
+    
+    img = Image('his.jpg')
+    img.height = 390
+    img.width = 450
+    calc.add_image(img, 'H1')
+    wb.save(sheetNames[0])
+    
+    plt.boxplot(goodHis,vert=False)
+    plt.xlabel('Liczba pakietów')
+    plt.savefig('box.jpg')
+    plt.show()
+    
+    img2 = Image('box.jpg')
+    img2.height = 390
+    img2.width = 450
+    calc.add_image(img2, 'P1')
+    wb.save(sheetNames[0])
 
     wb.save(dest_fileName)
