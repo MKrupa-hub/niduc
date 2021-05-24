@@ -1,8 +1,6 @@
-from openpyxl import Workbook
-import xmlHandler as hand
+import xlsxHandler as handler
 import Generator as gene
 import Decoder as deco
-import csv
 import random
 
 def write_result(dest_fileName, type):
@@ -40,19 +38,7 @@ def write_result(dest_fileName, type):
                 else:
                     temp[3] = temp[3] + 1
         result.append(temp)
-    wb = Workbook()
-    sheet = wb.active
-    sheet.title = sheetNames[0]
-    sheet.cell(row=1, column=1).value = columnname[0]
-    sheet.cell(row=1, column=2).value = columnname[1]
-    sheet.cell(row=1, column=3).value = columnname[2]
-    sheet.cell(row=1, column=4).value = columnname[3]
-    for row in range(2, sample + 2):
-        for column in range(1, 5):
-            sheet.cell(column = column, row = row).value = result[row - 2][column - 1]
-    wb.create_sheet(sheetNames[1], 1)
-    hand.calculateAverage(wb, sheetNames, columnname, sample)
-    wb.save(dest_fileName)
+    handler.handle(sheetNames, columnname, sample, result, dest_fileName)
 
 sheetNames = [ 'Sim', 'Calc']
 columnname = ['Good', 'Fixed', 'Fixed not', 'Undetected']
@@ -63,9 +49,6 @@ sample = 100 # ile wysylow wykonuje
 test = 1000 # Ile pakietow wysylamy
 probability = 0.05 # prawdopodobienstwo przeklamania bitu
 
-# sample, test, fileNames, sheetNames
-# handler = Handler(sample, test, fileNames, sheetNames)
-# handler.calculateAverage()
 # Kanal transmisyjny BSC
 # mamy zakodowany pakiet, przysylamy go przez kanal
 # jest prawdopodobienstwo ze zamienimy bit w pakiecie na przeciwny
