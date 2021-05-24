@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import math
 from openpyxl import Workbook
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image
@@ -38,7 +39,8 @@ def handle(sheetNames, columnname, sample, result, dest_fileName):
     goodHis = []
     [goodHis.append(result[x][0]) for x in range(sample)]
 
-    plt.hist(goodHis, bins=10)
+    hist_bins = math.ceil(math.sqrt(sample))
+    plt.hist(goodHis, bins = hist_bins)
     plt.xlabel('Liczba pakietów')
     plt.ylabel('Liczba wystąpień')
     plt.savefig('his.jpg')
