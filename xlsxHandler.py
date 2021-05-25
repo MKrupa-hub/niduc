@@ -36,7 +36,7 @@ def handle(sheetNames, columnname, sample, result, dest_fileName):
             calc[chr(65 + i) + str((8+quartile))] = '=QUARTILE(' + str(sheetNames[0]) + '!' + chr(64 + i) + str(2) + ':' + chr(64 + i) + str((sample + 1)) + ',' + 'A' + str((8 + quartile)) +')'
             calc['F' + str((8+quartile))] = message[quartile]
     # histogram
-    goodHis = []
+   goodHis = []
     [goodHis.append(result[x][0]) for x in range(sample)]
 
     hist_bins = math.ceil(math.sqrt(sample))
@@ -45,22 +45,84 @@ def handle(sheetNames, columnname, sample, result, dest_fileName):
     plt.ylabel('Liczba wystąpień')
     plt.savefig('his.jpg')
     plt.show()
-    
     img = Image('his.jpg')
     img.height = 390
     img.width = 450
     calc.add_image(img, 'H1')
-    wb.save(sheetNames[0])
-    
+
     plt.boxplot(goodHis,vert=False)
     plt.xlabel('Liczba pakietów')
     plt.savefig('box.jpg')
     plt.show()
-    
     img2 = Image('box.jpg')
     img2.height = 390
     img2.width = 450
     calc.add_image(img2, 'P1')
-    wb.save(sheetNames[0])
+
+    goodHis2 = []
+    [goodHis2.append(result[x][1]) for x in range(sample)]
+
+    plt.hist(goodHis2, bins=hist_bins)
+    plt.xlabel('Liczba pakietów')
+    plt.ylabel('Liczba wystąpień')
+    plt.savefig('his2.jpg')
+    plt.show()
+    img3 = Image('his2.jpg')
+    img3.height = 390
+    img3.width = 450
+    calc.add_image(img3, 'H23')
+
+    plt.boxplot(goodHis2, vert=False)
+    plt.xlabel('Liczba pakietów')
+    plt.savefig('box2.jpg')
+    plt.show()
+    img4 = Image('box2.jpg')
+    img4.height = 390
+    img4.width = 450
+    calc.add_image(img4, 'P23')
+
+    goodHis3 = []
+    [goodHis3.append(result[x][2]) for x in range(sample)]
+
+    plt.hist(goodHis3, bins=hist_bins)
+    plt.xlabel('Liczba pakietów')
+    plt.ylabel('Liczba wystąpień')
+    plt.savefig('his3.jpg')
+    plt.show()
+    img5 = Image('his3.jpg')
+    img5.height = 390
+    img5.width = 450
+    calc.add_image(img5, 'H45')
+
+    plt.boxplot(goodHis3, vert=False)
+    plt.xlabel('Liczba pakietów')
+    plt.savefig('box3.jpg')
+    plt.show()
+    img6 = Image('box3.jpg')
+    img6.height = 390
+    img6.width = 450
+    calc.add_image(img6, 'P45')
+
+    goodHis4 = []
+    [goodHis4.append(result[x][3]) for x in range(sample)]
+
+    plt.hist(goodHis4, bins=hist_bins)
+    plt.xlabel('Liczba pakietów')
+    plt.ylabel('Liczba wystąpień')
+    plt.savefig('his4.jpg')
+    plt.show()
+    img7 = Image('his4.jpg')
+    img7.height = 390
+    img7.width = 450
+    calc.add_image(img7, 'H67')
+
+    plt.boxplot(goodHis4, vert=False)
+    plt.xlabel('Liczba pakietów')
+    plt.savefig('box4.jpg')
+    plt.show()
+    img8 = Image('box4.jpg')
+    img8.height = 390
+    img8.width = 450
+    calc.add_image(img8, 'P67')
 
     wb.save(dest_fileName)
