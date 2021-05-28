@@ -45,13 +45,13 @@ columnname = ['Good', 'Fixed', 'Fixed not', 'Undetected']
 fileNames = ['_hamming.xlsx', '_multi.xlsx', '_crc.xlsx']
 multi = 4 # ile bitow powtarzany
 length = 11 # dlugosc pakietu
-sample = 100 # ile wysylow wykonuje
-test = 1000 # Ile pakietow wysylamy
+sample = 10 # ile wysylow wykonuje
+test = 100 # Ile pakietow wysylamy
 probability = 0.05 # prawdopodobienstwo przeklamania bitu
 
 # Kanal transmisyjny BSC
 # mamy zakodowany pakiet, przysylamy go przez kanal
 # jest prawdopodobienstwo ze zamienimy bit w pakiecie na przeciwny
 write_result(fileNames[0], 0)
-# write_result(fileNames[1], 1)
-# write_result(fileNames[2], 2)
+write_result(fileNames[1], 1)
+write_result(fileNames[2], 2)
