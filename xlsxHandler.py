@@ -71,16 +71,19 @@ def handle(sheetNames, columnname, sample, result, dest_fileName):
         for i in range(len(bins) - 1):
             x.append((bins[i] + bins[i + 1]) / 2)
         y = counts
-        params, cov = opt.curve_fit(pdf, x, y, p0=[max(y), quantiles[2], iqr / 1.349])
-        plt.plot(x, pdf(x, params[0], params[1], params[2]))
-        plt.title(columnname[iter])
-        plt.xlabel('Liczba pakietów przesłanych')
-        plt.ylabel('Liczba wystąpień')
-        plt.savefig(columnname[iter] + 'hist.jpg')
-        plt.close()  # +
-        img = Image(columnname[iter] + 'hist.jpg')
-        img.height = 390
-        img.width = 450
-        calc.add_image(img, ('P' + str(((iter +1) * 20))))
+        try:
+            params, cov = opt.curve_fit(pdf, x, y, p0=[max(y), quantiles[2], iqr / 1.349])
+            plt.plot(x, pdf(x, params[0], params[1], params[2]))
+            plt.title(columnname[iter])
+            plt.xlabel('Liczba pakietów przesłanych')
+            plt.ylabel('Liczba wystąpień')
+            plt.savefig(columnname[iter] + 'hist.jpg')
+            plt.close()  # +
+            img = Image(columnname[iter] + 'hist.jpg')
+            img.height = 390
+            img.width = 450
+            calc.add_image(img, ('P' + str(((iter +1) * 20))))
+        except Exception as EX:
+            print("FA")
         # plt.show()
     wb.save(dest_fileName)
