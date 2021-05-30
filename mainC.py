@@ -45,7 +45,7 @@ columnname = ['Good', 'Fixed', 'Fixed not', 'Undetected']
 fileNames = ['_hamming.xlsx', '_multi.xlsx', '_crc.xlsx']
 multi = 4 # ile bitow powtarzany
 length = 11 # dlugosc pakietu
-sample = 10 # ile wysylow wykonuje
+sample = 1000 # ile wysylow wykonuje
 test = 100 # Ile pakietow wysylamy
 probability = 0.05 # prawdopodobienstwo przeklamania bitu
 

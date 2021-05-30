@@ -12,78 +12,87 @@ import os
 from openpyxl.drawing.image import Image
 
 message = ['Min value', '25th percentile', '50th percentile', '75th percentile', 'Max value']
+imgWidth = 390
+imgHeight = 450
+charts = "charts"
+excelSam = "simResult"
 
 def pdf(x,a, mu, sigma):
-    return a * math.e ** ((-1 / 2) * (((x - mu) / sigma) ** 2))
+    return a* math.e ** ((-1 / 2) * (((x - mu) / sigma) ** 2))
+
+def printColumn(start, sheet, columnname):
+    for i in range(start,start+4):
+        sheet.cell(row=1, column=i).value = columnname[i - start]
 
 def handle(sheetNames, columnname, sample, result, dest_fileName):
     warnings.filterwarnings('ignore')
+    cwd = os.getcwd()
+    Path(cwd + '/' + charts).mkdir(parents = True, exist_ok = True)
+    Path(cwd + '/' + excelSam).mkdir(parents=True, exist_ok = True)
     wb = Workbook()
     sheet = wb.active
     sheet.title = sheetNames[0]
-    sheet.cell(row=1, column=1).value = columnname[0]
-    sheet.cell(row=1, column=2).value = columnname[1]
-    sheet.cell(row=1, column=3).value = columnname[2]
-    sheet.cell(row=1, column=4).value = columnname[3]
+    printColumn(1, sheet, columnname)
+    printColumn(7, sheet, columnname)
+    printColumn(14, sheet, columnname)
     for row in range(2, sample + 2):
         for column in range(1, 5):
             sheet.cell(column=column, row=row).value = result[row - 2][column - 1]
-    wb.create_sheet(sheetNames[1], 1)
-    calc = wb[sheetNames[1]]
-    wb.active = calc
 
-    calc['A2'] = 'Count'
-    calc['A3'] = 'Average'
-    calc['A4'] = 'Median'
-    calc['A5'] = 'Standard dev.'
-    calc['A7'] = 'Quartile'
-    for i in range(1, len(columnname) + 1):
-        calc[chr(65 + i) + '1'] = str(columnname[i -1])
-        calc[chr(65 + i) + '2'] = '=SUM(' + str(sheetNames[0]) + '!' + chr(64 + i) + str(2) + ':' + chr(64 + i) + str((sample + 1)) + ')'
-        calc[chr(65 + i) + '3'] = '=AVERAGE(' + str(sheetNames[0]) + '!' + chr(64 + i) + str(2) + ':' + chr(64 + i) + str((sample + 1)) + ')'
-        calc[chr(65 + i) + '4'] = '=MEDIAN(' + str(sheetNames[0]) + '!' + chr(64 + i) + str(2) + ':' + chr(64 + i) + str((sample + 1)) + ')'
-        calc[chr(65 + i) + '5'] = '=STDEV(' + str(sheetNames[0]) + '!' + chr(64 + i) + str(2) + ':' + chr(64 + i) + str((sample + 1)) + ')'
-        for quartile in range(5):
-            calc['A' + str((quartile + 8))] = quartile
-            calc[chr(65 + i) + str((8+quartile))] = '=QUARTILE(' + str(sheetNames[0]) + '!' + chr(64 + i) + str(2) + ':' + chr(64 + i) + str((sample + 1)) + ',' + 'A' + str((8 + quartile)) +')'
-            calc['F' + str((8+quartile))] = message[quartile]
+    sheet['F2'] = 'Average'
+    sheet['F3'] = 'Standard dev.'
+    sheet['F5'] = 'Quartile'
+    sheet['M2'] = 'a'
+    sheet['M3'] = 'mu'
+    sheet['M4'] = 'sigma'
+    for i in range(5):
+        sheet['F' + str((6 + i))] = i
+        sheet['K' + str((6 + i))] = message[i]
 
-    for iter in range(4):
-        goodHis = []
-        [goodHis.append(result[x][iter]) for x in range(sample)]
-        mean = statistics.mean(goodHis)
-        std = statistics.stdev(goodHis)
-        quantiles = statistics.quantiles(goodHis, n=6, method='inclusive')
-        iqr = quantiles[3] - quantiles[1]
-        box = plt.boxplot(quantiles, vert=False)
+    for iter in range(len(columnname)):
+        data = []
+        [data.append(result[x][iter]) for x in range(sample)]
+        mean = statistics.mean(data)
+        std = statistics.stdev(data)
+        quartiles = statistics.quantiles(data, n=6, method='inclusive')
+        iqr = quartiles[3] - quartiles[1]
+        box = plt.boxplot(quartiles, vert=False)
         plt.title(columnname[iter])
         plt.xlabel('Liczba pakietów przesłanych')
-        plt.savefig(columnname[iter] + 'box.jpg')
+        plt.savefig(charts + '/' + dest_fileName[1] + ' ' + columnname[iter] + 'box.jpg')
         plt.close()
-        img = Image(columnname[iter] + 'box.jpg')
-        img.height = 390
-        img.width = 450
-        calc.add_image(img, ('H' + str(((iter+1) * 20))))
-        # plt.show()
+        img = Image(charts + '/' + dest_fileName[1] + ' ' + columnname[iter] + 'box.jpg')
+        img.height = imgHeight
+        img.width = imgWidth
+        sheet.add_image(img, ('H' + str(((iter+1) * 20))))
 
-        counts, bins, bars = plt.hist(goodHis, bins=20)
+        counts, bins, bars = plt.hist(data, bins=20)
         x = []
         for i in range(len(bins) - 1):
             x.append((bins[i] + bins[i + 1]) / 2)
         y = counts
         try:
-            params, cov = opt.curve_fit(pdf, x, y, p0=[max(y), quantiles[2], iqr / 1.349])
+            params, pcov = opt.curve_fit(pdf, x, y, p0=[max(y), quartiles[2], iqr / 1.349], maxfev=5000)
             plt.plot(x, pdf(x, params[0], params[1], params[2]))
             plt.title(columnname[iter])
+            for i in range(len(params)):
+                sheet[chr(78+iter) + str((2+i))] = params[i]
+        except RuntimeError:
+            plt.title(columnname[iter] + "couldn't estimate Gauss")
+        finally:
             plt.xlabel('Liczba pakietów przesłanych')
             plt.ylabel('Liczba wystąpień')
-            plt.savefig(columnname[iter] + 'hist.jpg')
-            plt.close()  # +
-            img = Image(columnname[iter] + 'hist.jpg')
-            img.height = 390
-            img.width = 450
-            calc.add_image(img, ('P' + str(((iter +1) * 20))))
-        except Exception as EX:
-            print("FA")
-        # plt.show()
-    wb.save(dest_fileName)
+            plt.savefig(charts + '/' + dest_fileName[1] + ' ' + columnname[iter] + 'hist.jpg')
+            plt.close() 
+            img = Image(charts + '/' + dest_fileName[1] + ' ' + columnname[iter] + 'hist.jpg')
+            img.height = imgHeight
+            img.width = imgWidth
+            sheet.add_image(img, ('P' + str(((iter +1) * 20))))
+
+            sheet[chr(71 + iter) + '2'] = mean
+            sheet[chr(71 + iter) + '3'] = std
+
+            for i in range(len(quartiles)):
+                sheet[chr(71 + iter) + str((6+i))] = quartiles[i]
+
+    wb.save(excelSam + '/' + dest_fileName)
